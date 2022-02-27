@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+
+<html lang="en-US">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image assets</title>
+  <style type="text/css" media="screen">
+body {
+  background-color: white;
+  color: black;
+}
+canvas {
+  display: block;
+}
+.hidden {
+  display: none;
+}
+  </style>
+</head>
+
+<body>
+<section id="imageLoader" class="hidden">
+  <img class="hidden" src="images/bubble0.png" alt="bubble0" id="bubble0">
+  <img class="hidden" src="images/bubble1.png" alt="bubble1" id="bubble1">
+  <img class="hidden" src="images/bubble2.png" alt="bubble2" id="bubble2">
+  <img class="hidden" src="images/bubble3.png" alt="bubble3" id="bubble3">
+  <img class="hidden" src="images/bubble4.png" alt="bubble4" id="bubble4">
+  <img class="hidden" src="images/bubl0.png" alt="bubl0" id="bubl0">
+  <img class="hidden" src="images/bubl1.png" alt="bubl1" id="bubl1">
+  <img class="hidden" src="images/bubl2.png" alt="bubl2" id="bubl2">
+  <img class="hidden" src="images/bubr0.png" alt="bubr0" id="bubr0">
+  <img class="hidden" src="images/bubr1.png" alt="bubr1" id="bubr1">
+  <img class="hidden" src="images/bubr2.png" alt="bubr2" id="bubr2">
+</section>
+
+<main>
+<h1>Image assets</h1>
+
+<output></output>
+</main>
+
+<script>
+const output = document.querySelector('output');
+
+/*
+ * Return a random integer N such that min <= N < max.
+ */
+function getRandomInteger(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor((Math.random() * (max - min)) + min);
+}
+
+/*
+ * Draw red spikes in the specified rectangle over imageID in a canvas added to output.
+ */
+function drawSpike(imageID, x, y, width, height) {
+  let original = document.querySelector(imageID),
+      target = document.createElement('canvas');
+  output.appendChild(target);
+  target.width = original.width;
+  target.height = original.height;
+
+  let context = target.getContext('2d');
+  context.clearRect(0, 0, target.width, target.height);
+  context.drawImage(original, 0, 0);
+  context.fillStyle = 'red';
+  for (let i = x; i < (x + width); i++) {
+    for (let j = y; j < (y + height); j++) {
+      if (getRandomInteger(0, 100) < 50) {
+        context.fillRect(i, j, 1, 1);
+      }
+    }
+  }
+}
+
+/*
+ * Draw an aqua rectangle over imageID in a canvas added to output.
+ */
+function drawMask(imageID, x, y, width, height) {
+  let original = document.querySelector(imageID),
+      target = document.createElement('canvas');
+  output.appendChild(target);
+  target.width = original.width;
+  target.height = original.height;
+
+  let context = target.getContext('2d');
+  context.clearRect(0, 0, target.width, target.height);
+  context.drawImage(original, 0, 0);
+  context.fillStyle = 'aqua';
+  context.fillRect(x, y, width, height);
+}
+
+window.addEventListener('load', (event) => {
+  drawSpike('#bubble0', 7, 7, 26, 26);
+  drawSpike('#bubble1', 12, 12, 16, 16);
+  drawSpike('#bubble2', 12, 12, 16, 16);
+  drawSpike('#bubble3', 14, 14, 12, 12);
+  drawSpike('#bubble4', 16, 16, 8, 8);
+  drawMask('#bubl0', 5, 22, 20, 10);
+  drawMask('#bubl1', 5, 22, 20, 10);
+  drawMask('#bubl2', 5, 22, 20, 10);
+  drawMask('#bubr0', 15, 22, 20, 10);
+  drawMask('#bubr1', 15, 22, 20, 10);
+  drawMask('#bubr2', 15, 22, 20, 10);
+});
+</script>
+</body>
+
+</html>
