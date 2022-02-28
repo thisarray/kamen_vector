@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+
+<html lang="en-US">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kamen Vector</title>
+  <script src="../jsgame0.js"></script>
+  <style type="text/css" media="screen">
+body {
+  background-color: white;
+  color: black;
+}
+.hidden {
+  display: none;
+}
+#original {
+  margin-left: 1em;
+}
+  </style>
+</head>
+
+<body>
+<section id="imageLoader" class="hidden">
+  <img class="hidden" src="images/background.png" alt="background" data-name="background">
+  <img class="hidden" src="images/bubble0m.png" alt="bubble0m" data-name="bubble0m">
+  <img class="hidden" src="images/bubble1m.png" alt="bubble1m" data-name="bubble1m">
+  <img class="hidden" src="images/bubble2m.png" alt="bubble2m" data-name="bubble2m">
+  <img class="hidden" src="images/bubble3m.png" alt="bubble3m" data-name="bubble3m">
+  <img class="hidden" src="images/bubble4m.png" alt="bubble4m" data-name="bubble4m">
+  <img class="hidden" src="images/bubble_1.png" alt="bubble_1" data-name="bubble_1">
+  <img class="hidden" src="images/bubl0.png" alt="bubl0" data-name="bubl0">
+  <img class="hidden" src="images/bubl1.png" alt="bubl1" data-name="bubl1">
+  <img class="hidden" src="images/bubl2.png" alt="bubl2" data-name="bubl2">
+  <img class="hidden" src="images/bubl3.png" alt="bubl3" data-name="bubl3">
+  <img class="hidden" src="images/bubl0m.png" alt="bubl0m" data-name="bubl0m">
+  <img class="hidden" src="images/bubl1m.png" alt="bubl1m" data-name="bubl1m">
+  <img class="hidden" src="images/bubl2m.png" alt="bubl2m" data-name="bubl2m">
+  <img class="hidden" src="images/bubr0.png" alt="bubr0" data-name="bubr0">
+  <img class="hidden" src="images/bubr1.png" alt="bubr1" data-name="bubr1">
+  <img class="hidden" src="images/bubr2.png" alt="bubr2" data-name="bubr2">
+  <img class="hidden" src="images/bubr3.png" alt="bubr3" data-name="bubr3">
+  <img class="hidden" src="images/bubr0m.png" alt="bubr0m" data-name="bubr0m">
+  <img class="hidden" src="images/bubr1m.png" alt="bubr1m" data-name="bubr1m">
+  <img class="hidden" src="images/bubr2m.png" alt="bubr2m" data-name="bubr2m">
+  <img class="hidden" src="images/platform11.png" alt="platform11" data-name="platform11">
+</section>
+
+<main>
+<h1>Kamen Vector</h1>
+
+<canvas id="screen">
+The game screen appears here if your browser supports the Canvas API.
+</canvas>
+<section id="controls">
+  <button type="button" id="reset">Reset</button>
+  <button type="button" id="pause">Pause</button>
+</section>
+
+<p>Kamen Vector saves lives!</p>
+
+<h2>Attribution</h2>
+
+<p>Images licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/legalcode">Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported</a>.</p>
+
+</main>
+
+<script>
+var bub, count, platformActors, bubbles;
+
+/*
+ * Return a random integer N such that min <= N < max.
+ */
+function getRandomInteger(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor((Math.random() * (max - min)) + min);
+}
+
+function reset() {
+  bub = new Actor('bubr0');
+  bub.pos = [400, 300];
+  bub.direction = "r";
+  bub.jump = 0;
+  bub.masked = false;
+  bub.onground = false;
+  count = 0;
+  platformActors = [];
+  bubbles = [];
+  for (let r = 0; r < 40; r++) {
+    for (let c = 0; c < 20; c++) {
+      if ((c === 0) || (c === 19) || (r === 0) || (r === 39) || (((r === 10) || (r === 20) || (r === 30)) && (c !== 3) && (c !== 4) && (c !== 15) && (c !== 16))) {
+        let platform = new Actor('platform11');
+        platform.pos = [50 + (c * 37), 80 + (r * 12)];
+        platformActors.push(platform);
+      }
+    }
+  }
+}
+
+function draw() {
+  screen.blit("background", [0, 0]);
+
+  screen.draw.filled_rect(new Rect(350, 0, 100, 70), 'black');
+  let text = 'Kamen Vector';
+  if (bub.masked) {
+    text = 'MASKED';
+  }
+  screen.draw.text(text, {
+    center: [400, 35],
+    owidth: 1,
+    ocolor: [255, 255, 0],
+    color: [255, 0, 124],
+    fontsize: 40
+  });
+
+  drawPlatforms();
+  drawBubbles();
+  bub.draw();
+}
+
+function update() {
+  if ((count % 20) === 0) {
+    bub.name = "bub" + bub.direction + "0";
+    if (bub.masked) {
+      bub.name += 'm';
+    }
+  }
+  if (keyboard[keys.LEFT]) {
+    moveBub(-1, 0);
+    bub.direction = "l";
+    bub.name = "bubl" + (Math.trunc(count / 8) % 3);
+    if (bub.masked) {
+      bub.name += 'm';
+    }
+  }
+  if (keyboard[keys.RIGHT]) {
+    moveBub(1, 0);
+    bub.direction = "r";
+    bub.name = "bubr" + (Math.trunc(count / 8) % 3);
+    if (bub.masked) {
+      bub.name += 'm';
+    }
+  }
+  checkGravity();
+  updateBubbles();
+  count += 1;
+}
+
+function on_key_down(key) {
+  if (keyboard[keys.UP]) {
+    if (bub.onground) {
+      bub.jump = 60;
+    }
+  }
+  if (keyboard[keys.M]) {
+    bub.masked = !bub.masked;
+  }
+  if (keyboard[keys.SPACE] && (!bub.masked)) {
+    fireBubble();
+  }
+}
+
+function drawPlatforms() {
+  for (let p of platformActors) {
+    p.draw();
+  }
+}
+
+function moveBub(x, y) {
+  if (((bub.posx + x) < 720) && ((bub.posx + x) > 80)) {
+    bub.posx += x * 2;
+    for (let b of bubbles) {
+      if (b.collidepoint([bub.posx, bub.posy])) {
+        b.posx += x * 2;
+      }
+    }
+  }
+}
+
+function checkGravity() {
+  if (bub.jump > 0) {
+    if (bub.posy > 85) {
+      bub.posy -= 3 + (bub.jump / 30);
+    }
+    bub.jump -= 1;
+    if (bub.jump <= 0) {
+      bub.posy = Math.floor(bub.posy / 2) * 2;
+    }
+    for (let b of bubbles) {
+      if (b.collidepoint([bub.posx, bub.posy]) && (b.status === 0)) {
+        b.countdown = 10;
+        b.jump = 0;
+        bub.posy = Math.floor(bub.posy / 2) * 2;
+      }
+    }
+  }
+  bub.onground = false;
+  for (let p of platformActors) {
+    if (((bub.posx > (p.posx - 20)) && (bub.posx < (p.posx + 20))) && ((bub.posy + 18) === (p.posy - 14))) {
+      bub.onground = true;
+    }
+  }
+  if (!bub.onground) {
+    bub.posy += 2;
+  }
+}
+
+function fireBubble() {
+  bub.name = "bub" + bub.direction + "3";
+  let bubble = new Actor('bubble4m');
+  bubble.pos = [bub.posx, bub.posy];
+  bubble.status = 20;
+  bubble.direction = bub.direction;
+  bubble.driftx = 0;
+  bubble.drifty = -0.5;
+  bubble.countdown = 1000;
+  bubbles.push(bubble);
+}
+
+function drawBubbles() {
+  for (let b of bubbles) {
+    b.draw();
+  }
+}
+
+function updateBubbles() {
+  for (let b of bubbles) {
+    if (b.status > 0) {
+      if (b.direction === "l") {
+        b.pos = checkCollision(b, -b.status, 0);
+      }
+      else {
+        b.pos = checkCollision(b, b.status, 0);
+      }
+      b.status -= 1;
+    }
+    else {
+      b.pos = checkCollision(b, b.driftx, b.drifty);
+      if (getRandomInteger(0, 501) === 1) {
+        b.driftx = (getRandomInteger(0, 5) - 2) / 10;
+      }
+    }
+    if (b.countdown > 10) {
+      b.name = "bubble" + Math.trunc(b.status / 5) + 'm';
+    }
+    else {
+      b.name = "bubble_1";
+    }
+    b.countdown -= 1;
+  }
+  for (let b = bubbles.length - 1; b >= 0; b--) {
+    if (bubbles[b].countdown < 0) {
+      bubbles.splice(b, 1);
+    }
+  }
+}
+
+function checkCollision(o, xinc, yinc) {
+  if (((o.posx + xinc) > 720) || ((o.posx + xinc) < 80) || ((o.posy + yinc) < 90) || ((o.posy + yinc) > 550)) {
+    o.drifty = o.drifty * -1;
+    o.driftx = o.driftx * -1;
+    return o.pos;
+  }
+  for (let b of bubbles) {
+    if (b.collidepoint([o.posx + xinc, o.posy + yinc]) && (o != b)) {
+      b.posx += xinc;
+      b.driftx = (getRandomInteger(0, 5) - 2) / 10;
+    }
+  }
+  return [o.posx + xinc, o.posy + yinc];
+}
+
+window.addEventListener('load', (event) => {
+  images.LOAD('#imageLoader img');
+  reset();
+  screen.set_mode('#screen', '#reset', '#pause');
+});
+</script>
+</body>
+
+</html>
