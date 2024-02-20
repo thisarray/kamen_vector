@@ -265,7 +265,7 @@ function checkCollision(o, xinc, yinc) {
     return o.pos;
   }
   for (let b of bubbles) {
-    if (b.collidepoint([o.posx + xinc, o.posy + yinc]) && (o != b)) {
+    if (b.collidepoint([o.posx + xinc, o.posy + yinc]) && (o !== b)) {
       b.posx += xinc;
       b.driftx = (getRandomInteger(0, 5) - 2) / 10;
     }
